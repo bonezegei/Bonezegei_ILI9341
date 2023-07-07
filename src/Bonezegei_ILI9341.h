@@ -8,68 +8,78 @@
 #include <SPI.h>
 #include <Arduino.h>
 
+
+#include "bitmaps/default.h"
+#include "Font.h"
+
+
+#if defined(ILI9341_18BIT)
+#define COLOR_RED 0xFF0000
+#define COLOR_BLUE 0x0000ff
+#define COLOR_GREEN 0x00ff00
+#define COLOR_WHITE 0xFFFFFF
+#define COLOR_BLACK 0x000000
+#else
+#define COLOR_RED 0xF800
+#define COLOR_BLUE 0x001F
+#define COLOR_GREEN 0x03E0
+#define COLOR_WHITE 0xFFFF
+#define COLOR_BLACK 0x0000
+#endif
+
+
+
+
+//FONT FONT_VERDANA12;
+// = { verdana_12ptBitmaps, verdana_12ptDescriptors };
+//FONT FONT_VERDANA12B ={verdanaB_12ptBitmaps,verdanaB_12ptDescriptors};
+
 //default SPI Speed
-//#define ILI9341_SPISPEED 1000000U
-static const int ILI9341_SPISPEED = 240000000; // 1 MHz
+static const int ILI9341_SPISPEED = 80000000;  // 80 MHz
 
 class Bonezegei_ILI9341 {
-  public:
-    Bonezegei_ILI9341();
-    Bonezegei_ILI9341( int8_t rst, int8_t cs, int8_t dc );
+public:
+  Bonezegei_ILI9341();
+  Bonezegei_ILI9341(int8_t rst, int8_t cs, int8_t dc);
 
-    void begin();
-    void setRotation(uint8_t rotation);
-    void drawPixel(uint16_t x, uint16_t y, uint32_t color);
+  void begin();
+  void sendCommand(uint8_t cmd);
+  void sendData(uint8_t dat);
+  void spi24(uint32_t dat);
+  void spi16(uint16_t dat);
 
-    void sendCommand(uint8_t cmd);
-    void sendData(uint8_t dat);
+  void col(uint16_t st, uint16_t en);
+  void row(uint16_t st, uint16_t en);
+  void setRotation(uint8_t rotation);
+  void drawPixel(uint16_t x, uint16_t y, uint32_t color);
 
-    void sendCommands(uint8_t cmd, uint8_t param[], uint8_t siz);
-    void sendSPI(uint8_t dat);
+  void clear(uint32_t color);
 
-    void col(uint16_t st, uint16_t en) {
-      sendCommand(0x2a);
-      sendData(st >> 8);
-      sendData(st);
-      sendData(en >> 8);
-      sendData(en);
-    }
+  void drawFilledRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);
+  void drawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);
+  void drawRectangleStrip(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);
+  void drawCircle(uint16_t x1, uint16_t y1, uint16_t r, uint32_t color);
+  void drawBitmap(uint16_t x1, uint16_t y1, int xbytes, int yheight, const char bitmap[], uint32_t color);
 
-    void row(uint16_t st, uint16_t en) {
-      sendCommand(0x2b);
-      sendData(st >> 8);
-      sendData(st);
-      sendData(en >> 8);
-      sendData(en);
-    }
+  void drawRoundFilledRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t r, uint32_t color);
+  //void
 
-    inline void pix(uint32_t color) {
-      sendData(color);
-      sendData(color >> 8);
-      sendData(color >> 16);
-      //vspi->write(color);
-      //vspi->write16(color >> 8);
-    }
+  void setChar8(uint16_t x, uint16_t y, char ch, int bits, uint32_t color);
+  void drawChar(int x, int y, char ch, uint32_t color, const char fd[], const int dsc[95][3]);
+  void drawText(int x, int y, const char *str, uint32_t color, const char fd[], const int dsc[95][3]);
+  void drawText(int x, int y, const char *str, uint32_t color);
 
-    void clr(uint32_t color) {
-      col(0, 240);
-      row(0, 320);
-      sendCommand(0x2c);
-      //digitalWrite(_cs, LOW);
+  void setFontParam(const char fd[], const int dsc[95][3]);
+  void setFont(FONT_TYPE ft);
 
-      for (int a = 0; a < 76800; a++) {
-        pix(color);
-        //vspi-> write32(color);
-      }
-      //vspi->transfer(dat);
-      
-      //digitalWrite(_cs, HIGH);
-    }
+  int8_t _rst;
+  int8_t _cs;
+  int8_t _dc;
+  SPIClass *vspi = NULL;
 
-    int8_t _rst;
-    int8_t _cs;
-    int8_t _dc;
-    SPIClass * vspi = NULL;
+  int xRun;
+  int yRun;
+  FONT font;
 };
 
 #endif
