@@ -339,3 +339,76 @@ void Bonezegei_ILI9341::setFont(FONT_TYPE ft) {
       setFontParam(arial_8ptBitmaps, arial_8ptDescriptors);
   }
 }
+
+
+/*
+Clipped
+*/
+
+void Bonezegei_ILI9341::setCharClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x, uint16_t y, char ch, int bits, uint32_t color) {
+  int b = 0;
+  for (int a = 7; a > (7 - bits); a--) {
+    if (ch & (1 << a)) {
+      int xb = x + b;
+      if ((xb > cx1) && (xb < cx2) && (y > cy1) && (y < cy2)) drawPixel(xb, y, color);
+    }
+    b++;
+  }
+}
+
+
+void Bonezegei_ILI9341::drawCharClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, char ch, uint32_t color, const char fd[], const int dsc[95][3]) {
+  int b = ch - 32;
+  int xLimit = cx2;
+  //int yLimit = 240;
+
+  if (xRun >= (xLimit - 8)) {
+    xRun = cx1 + 1;
+    yRun += dsc[b][1] + 2;
+  }
+
+  if (dsc[b][0] <= 8) {
+    for (int a = 0; a < dsc[b][1]; a++) {
+      setCharClipped(cx1, cy1, cx2, cy2, xRun, yRun + a, fd[(dsc[b][2] + a)], dsc[b][0], color);
+    }
+  } else {
+    for (int a = 0; a < (dsc[b][1] * 2); a++) {
+      if ((a % 2) == 0) setCharClipped(cx1, cy1, cx2, cy2, xRun, yRun + (a / 2), fd[(dsc[b][2] + a)], 8, color);
+      else setCharClipped(cx1, cy1, cx2, cy2, xRun + 8, yRun + (a / 2), fd[(dsc[b][2] + a)], dsc[b][0] - 7, color);
+    }
+  }
+  xRun += dsc[b][0] + 2;
+}
+
+
+void Bonezegei_ILI9341::drawTextClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, const char *str, uint32_t color, const char fd[], const int dsc[95][3]) {
+  xRun = x;
+  yRun = y;
+  vspi->setFrequency(ILI9341_SPISPEED);
+  while (*str) {
+    drawCharClipped(cx1, cy1, cx2, cy2, x, y, *str, color, fd, dsc);
+    str += 1;
+  }
+}
+
+void Bonezegei_ILI9341::drawTextClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, const char *str, uint32_t color) {
+  xRun = x;
+  yRun = y;
+  vspi->setFrequency(ILI9341_SPISPEED);
+  while (*str) {
+    drawCharClipped(cx1, cy1, cx2, cy2, x, y, *str, color, font.fnt, font.descriptor);
+    str += 1;
+  }
+}
+
+
+void Bonezegei_ILI9341::drawBitmapClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x1, uint16_t y1, int xbytes, int yheight, const char bitmap[], uint32_t color) {
+  int cnt = 0;
+  for (int b = 0; b < yheight; b++) {
+    for (int a = 0; a < xbytes; a++) {
+
+      setCharClipped(cx1, cy1, cx2, cy2, x1 + (a * 8), y1 + b, bitmap[cnt], 8, color);
+      cnt++;
+    }
+  }
+}
