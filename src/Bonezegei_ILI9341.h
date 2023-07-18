@@ -24,7 +24,7 @@
 #define COLOR_TEAL 0x008080
 #define COLOR_YELLOW 0xFFFF00
 
-static const int ILI9341_SPISPEED = 80000000;  // 80 MHz
+static const int ILI9341_SPISPEED = 60000000;  // 80 MHz
 
 class Bonezegei_ILI9341 {
 public:
@@ -61,7 +61,13 @@ public:
   void drawCharClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, char ch, uint32_t color, const char fd[], const int dsc[95][3]);
   void drawTextClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, const char *str, uint32_t color, const char fd[], const int dsc[95][3]);
   void drawTextClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, const char *str, uint32_t color);
-  void drawBitmapClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2,uint16_t x1, uint16_t y1, int xbytes, int yheight, const char bitmap[], uint32_t color);
+  void drawBitmapClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x1, uint16_t y1, int xbytes, int yheight, const char bitmap[], uint32_t color);
+
+  void drawTextClippedNL(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, const char *str, uint32_t color);  //NL new line if the word exceeds the length of the remaining space
+  void drawPixelClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2,uint16_t x, uint16_t y, uint32_t color);
+  void drawFilledRectangleClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);
+  void drawRectangleClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color);
+
 
   void setFontParam(const char fd[], const int dsc[95][3]);
   void setFont(FONT_TYPE ft);
