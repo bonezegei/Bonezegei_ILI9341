@@ -401,6 +401,56 @@ void Bonezegei_ILI9341::drawTextClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2
   }
 }
 
+void Bonezegei_ILI9341::drawTextClippedNL(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, int x, int y, const char *str, uint32_t color) {
+  xRun = x;
+  yRun = y;
+  int nextWordStart = 0;
+
+  char buffWord[32];
+  int buffWordCount = 0;
+
+  vspi->setFrequency(ILI9341_SPISPEED);
+
+  int strCount = 0;
+
+  while (str[strCount]) {
+
+    if (strCount == nextWordStart) {
+      buffWordCount = 0;
+      //for(int a=0; a<32; a++)buffWord[a]=0;
+      for (int a = nextWordStart; a < (nextWordStart + 32); a++) {
+        if (str[a] > 32) {
+          buffWord[buffWordCount] = str[a];
+
+          buffWordCount++;
+        } else {
+          a = nextWordStart + 32;
+          buffWord[buffWordCount] = 0;
+          // Serial.print(" Word:");
+          int w = getStringWidth((char *)buffWord);
+          //drawRectangle(xRun, yRun, xRun + w, yRun + font.descriptor[0][1], COLOR_TEAL);
+
+          if ((w + 8) >= (cx2 - xRun)) {
+            xRun = cx1 + 1;
+            yRun += font.descriptor[0][1] + 2;
+          }
+        }
+        nextWordStart++;
+      }
+
+      /*       Serial.print(" Word:");
+      String b = "";
+      b += buffWord;
+      Serial.println(b); */
+    }
+
+    drawCharClipped(cx1, cy1, cx2, cy2, x, y, str[strCount], color, font.fnt, font.descriptor);
+
+    strCount++;
+  }
+}
+
+
 
 void Bonezegei_ILI9341::drawBitmapClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x1, uint16_t y1, int xbytes, int yheight, const char bitmap[], uint32_t color) {
   int cnt = 0;
@@ -411,4 +461,24 @@ void Bonezegei_ILI9341::drawBitmapClipped(uint16_t cx1, uint16_t cy1, uint16_t c
       cnt++;
     }
   }
+}
+
+
+void Bonezegei_ILI9341::drawPixelClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x, uint16_t y, uint32_t color) {
+
+
+  if ((x > cx1) && (x < cx2) && (y > cy1) && (y < cy2)) drawPixel(x, y, color);
+}
+
+void Bonezegei_ILI9341::drawFilledRectangleClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color) {
+  int w = x2 - x1;
+  int h = y2 - y1;
+  for (int b = 0; b < h; b++) {
+    for (int a = 0; a < w; a++) {
+      drawPixelClipped(cx1, cy1, cx2, cy2, x1 + a, y1 + b, color);
+    }
+  }
+}
+
+void Bonezegei_ILI9341::drawRectangleClipped(uint16_t cx1, uint16_t cy1, uint16_t cx2, uint16_t cy2, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t color) {
 }
